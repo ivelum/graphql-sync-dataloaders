@@ -72,15 +72,35 @@ class SyncFuture:
         for callback in callbacks:
             callback(self._result)
 
-    def then(self, on_complete: Callable) -> "SyncFuture":
+    def then(
+            self,
+            on_complete: Callable,
+            handle_exception: Callable = None,
+    ) -> "SyncFuture":
         ret = SyncFuture()
 
         def call_and_resolve(v: Any) -> None:
             try:
                 ret.set_result(on_complete(v))
             except Exception as e:
-                ret.set_exception(e)
+                if handle_exception is None:
+                    ret.set_exception(e)
+                else:
+                    handle_exception(e, ret)
 
         self.add_done_callback(call_and_resolve)
 
         return ret
+
+
+def maybe_then(value, on_complete, on_exception=None):
+    try:
+        if not isinstance(value, SyncFuture):
+            return on_complete(value)
+
+        if value.done():
+            return on_complete(value.result())
+    except Exception as e:
+        return on_exception(e)
+
+    return value.then(on_complete, on_exception)
