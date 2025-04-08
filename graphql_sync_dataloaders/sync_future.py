@@ -88,7 +88,10 @@ class SyncFuture:
                 else:
                     handle_exception(e, ret)
 
-        self.add_done_callback(call_and_resolve)
+        if self.done():
+            call_and_resolve(self.result())
+        else:
+            self.add_done_callback(call_and_resolve)
 
         return ret
 
