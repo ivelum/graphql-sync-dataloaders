@@ -104,6 +104,9 @@ def maybe_then(value, on_complete, on_exception=None):
         if value.done():
             return on_complete(value.result())
     except Exception as e:
-        return on_exception(e)
+        if on_exception:
+            return on_exception(e)
+        else:
+            raise
 
     return value.then(on_complete, on_exception)
