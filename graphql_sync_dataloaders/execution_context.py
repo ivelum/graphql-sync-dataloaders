@@ -33,7 +33,12 @@ from .sync_future import SyncFuture, maybe_then
 from .sync_dataloader import dataloader_batch_callbacks
 
 
-PENDING_FUTURE = object()
+class PendingFuture:
+    def __str__(self):
+        return 'Placeholder value - will be replaced'
+
+
+PENDING_FUTURE = PendingFuture()
 
 
 class DeferredExecutionContext(ExecutionContext):
