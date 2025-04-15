@@ -35,7 +35,7 @@ from .sync_dataloader import dataloader_batch_callbacks
 
 class PendingFuture:
     def __str__(self):
-        return 'Placeholder value - will be replaced'
+        return 'PENDING_FUTURE'
 
 
 PENDING_FUTURE = PendingFuture()
