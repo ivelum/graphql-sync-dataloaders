@@ -200,10 +200,17 @@ class DeferredExecutionContext(ExecutionContext):
 
             # noinspection PyShadowingNames
             def on_exception(item_path, e):
+                nonlocal unresolved
+
+                unresolved -= 1
+                if not unresolved:
+                    future.set_result(results)
+
                 error = located_error(
                     e, field_nodes, item_path.as_list()
                 )
                 self.handle_field_error(error, item_type)
+
             callbacks.append((
                 item_or_future,
                 partial(process_item, index, item_path),
