@@ -101,8 +101,8 @@ class DeferredExecutionContext(ExecutionContext):
                 partial(process_result, response_name),
             ))
 
-        for field_result, callback in callbacks:
-            maybe_then(field_result, callback)
+        # for field_result, callback in callbacks:
+        #     maybe_then(field_result, callback)
 
         if future.done():
             return future.result()
