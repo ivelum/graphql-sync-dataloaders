@@ -1,4 +1,5 @@
-from typing import List, Callable
+import contextvars
+from typing import Callable
 from graphql.pyutils import is_collection
 
 from .sync_future import SyncFuture
@@ -9,19 +10,31 @@ class DataloaderBatchCallbacks:
     Singleton that stores all the batched callbacks for all dataloaders. This is
     equivalent to the async `loop.call_soon` functionality and enables the
     batching functionality of dataloaders.
+
+    We keep a separate list of callbacks for each thread, allowing the global
+    dataloader_batch_callbacks to be used safely across multiple threads.
     """
-    _callbacks: List[Callable]
 
     def __init__(self) -> None:
-        self._callbacks = []
+        self._callback_context = contextvars.ContextVar(
+            'DataloaderBatchCallbacks._callback_context',
+        )
+
+    @property
+    def _callbacks(self):
+        try:
+            return self._callback_context.get()
+        except LookupError:
+            cbs = []
+            self._callback_context.set(cbs)
+            return cbs
 
     def add_callback(self, callback: Callable):
         self._callbacks.append(callback)
 
     def run_all_callbacks(self):
-        callbacks = self._callbacks
-        while callbacks:
-            callbacks.pop(0)()
+        while self._callbacks:
+            self._callbacks.pop(0)()
 
 
 dataloader_batch_callbacks = DataloaderBatchCallbacks()
